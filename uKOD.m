@@ -22,6 +22,8 @@ fasforskjutning = vinkelhastighet * delta_t;
 disp(belopp); %% skriv ut belopp och fasförskjutning så att vi slipper beräkna det själva.
 disp(fasforskjutning);
 
+
+
 %% PLOTTA BODEDIAGRAM OCH NYQUIST
 belopp_list = [0.2, 0.39, 0.75, 1.05, 1.45, 2.83, 5.50, 8.0]; %uppmätta belopp
 fas_list = [0.2, 0.39, 0.75, 1.05, 1.45, 2.83, 5.50, 8.0];    %uppmätta fasförskjutningar
@@ -33,13 +35,15 @@ figure; margin(G);
 figure; nyquist(G); 
 [belopp_wc, fas_wc] = bode(G, w_c);
 
+
+
 %% BERÄKNA OCH TESTA LEADFILTER
 phi_m = 53;
 phi_max = phi_m - (fas_wc - (-180)) + 6;
 
 
-beta = 0; %% bestäm värde på beta genom att läsa av i tabell.
-
+%beta = 0; % bestäm värde på beta genom att läsa av i tabell.
+beta = (1 - sin(phi_max * pi/180)) / (1 + sin(phi_max * pi/180));
 tauD = 1 / (w_c * sqrt(beta));
 K = sqrt(beta) / belopp_wc;
 F_lead = K * tf([tauD 1], [beta*tauD 1]);
@@ -49,6 +53,9 @@ r = GetStep(1);
 plot(t, [r(:), y(:)]);
 legend('Referens', 'Position');
 xlabel('Tid [s]'); ylabel('Vinkel [rad]');
+
+
+
 %% LÄGG TILL LAGFILTER OCH TESTA MED LASTSTÖRNING
 gamma = 0;
 tauI = 6.9;
@@ -59,12 +66,19 @@ F = F_lead * F_lag;
 r = GetStep(-0.2);
 [y, t] = FeedbackControl(F, r);
 plot(t, [r(:), y(:)]);
+
+
+
 %% PLOTTA KRETSFÖRSTÄRKNING OCH ÅTERKOPPLAT SYSTEM
 Go = F * G;
-figure; margin(Go);      % Bode för kretsförstärkningen
-figure; nyquist(Go);     % Nyquist
+figure; margin(Go); % Bode för kretsförstärkningen
+figure; nyquist(Go);  % Nyquist
 Gc = feedback(Go, 1);
-figure; bode(Gc);        % Bode för återkopplade systemet
+figure; bode(Gc); % Bode för återkopplade systemet
+bandwidth(Gc)
+
+
+
 %% DENNA DEL ÄR TILL FÖR ATT EXPERIMENTERA UNDER LABBEN
 
 disp(fas_wc)
